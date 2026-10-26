@@ -1,0 +1,226 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Revyve | Sustainable Fashion</title>
+<style>
+:root {
+  --blue: #D7F8FC;
+  --white: #F8F8F8;
+  --navy: #092857;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--white);
+  color: var(--navy);
+  font-family: Arial, sans-serif;
+}
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  border-bottom: 1px solid var(--navy);
+}
+.logo {
+  font-size: 28px;
+  font-weight: bold;
+  letter-spacing: 4px;
+}
+button, select {
+  padding: 12px;
+  border: 1px solid var(--navy);
+  border-radius: 3px;
+  font: inherit;
+}
+button {
+  background: var(--navy);
+  color: var(--white);
+  cursor: pointer;
+}
+button:hover {
+  background: var(--blue);
+  color: var(--navy);
+}
+main {
+  max-width: 650px;
+  margin: 25px auto;
+  padding: 20px;
+}
+.product {
+  background: var(--blue);
+  padding: 25px;
+  border-radius: 6px;
+}
+.tag {
+  font-size: 12px;
+  letter-spacing: 2px;
+}
+h1 { font-size: 30px; }
+label {
+  display: block;
+  margin: 18px 0 8px;
+  font-weight: bold;
+}
+select { width: 100%; background: var(--white); }
+.add { width: 100%; margin-top: 18px; }
+#cart { margin-top: 25px; }
+.item {
+  padding: 16px 0;
+  border-bottom: 1px solid #b6c6d5;
+}
+.item button { margin-top: 8px; }
+.muted { font-size: 14px; }
+[hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">revyve</div>
+  <button id="cartButton">Cart (0)</button>
+</header>
+
+<main>
+  <section id="shop">
+    <div class="product">
+      <p class="tag">SUSTAINABLE FASHION</p>
+      <h1>The Revyve Essential Top</h1>
+      <p>Thoughtfully designed. Made to be worn for longer.</p>
+      <p><strong>Price: Coming soon</strong></p>
+
+      <label for="size">Choose your size</label>
+      <select id="size">
+        <option value="">Select a size</option>
+        <option>XS</option>
+        <option>S</option>
+        <option>M</option>
+        <option>L</option>
+        <option>XL</option>
+      </select>
+
+      <label for="quantity">Quantity</label>
+      <select id="quantity">
+        <option>1</option>
+        <option>2</option>
+        <option>3</option>
+        <option>4</option>
+        <option>5</option>
+      </select>
+
+      <button class="add" id="add">ADD TO CART</button>
+      <p id="message" aria-live="polite"></p>
+    </div>
+  </section>
+
+  <section id="cart" hidden>
+    <h1>Your shopping bag</h1>
+    <div id="items"></div>
+    <h3 id="total">Total: Prices coming soon</h3>
+    <p class="muted">Prices and checkout will be added later.</p>
+    <button id="continue">CONTINUE SHOPPING</button>
+  </section>
+</main>
+
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const key = "revyve-demo-cart-v1";
+  let cart = [];
+
+  try {
+    cart = JSON.parse(localStorage.getItem(key) || "[]");
+    if (!Array.isArray(cart)) cart = [];
+  } catch (e) { cart = []; }
+
+  function save() {
+    try {
+      localStorage.setItem(key, JSON.stringify(cart));
+    } catch (e) {
+      $("message").textContent =
+        "Your browser couldn't save the cart.";
+    }
+  }
+
+  function render() {
+    $("cartButton").textContent =
+      "Cart (" + cart.reduce((n, x) => n + x.qty, 0) + ")";
+
+    $("items").replaceChildren();
+
+    if (!cart.length) {
+      $("items").textContent = "Your cart is empty.";
+    }
+
+    cart.forEach((item, i) => {
+      const div = document.createElement("div");
+      div.className = "item";
+
+      const title = document.createElement("strong");
+      title.textContent = item.name;
+
+      const details = document.createElement("p");
+      details.textContent =
+        "Size: " + item.size + " · Quantity: " + item.qty;
+
+      const price = document.createElement("p");
+      price.textContent = "Price: Coming soon";
+
+      const remove = document.createElement("button");
+      remove.textContent = "Remove";
+      remove.onclick = () => {
+        cart.splice(i, 1);
+        save();
+        render();
+      };
+
+      div.append(title, details, price, remove);
+      $("items").append(div);
+    });
+
+    $("total").textContent = "Total: Prices coming soon";
+  }
+
+  $("add").onclick = () => {
+    const size = $("size").value;
+    const qty = Number($("quantity").value);
+
+    if (!size) {
+      $("message").textContent = "Please select a size first.";
+      return;
+    }
+
+    const existing = cart.find(
+      x => x.name === "Revyve Essential Top" && x.size === size
+    );
+
+    if (existing) existing.qty += qty;
+    else cart.push({
+      name: "Revyve Essential Top",
+      size: size,
+      qty: qty
+    });
+
+    save();
+    render();
+    $("message").textContent = "Added to your cart!";
+  };
+
+  $("cartButton").onclick = () => {
+    $("shop").hidden = true;
+    $("cart").hidden = false;
+    render();
+  };
+
+  $("continue").onclick = () => {
+    $("cart").hidden = true;
+    $("shop").hidden = false;
+  };
+
+  render();
+})();
+</script>
+</body>
+</html>
